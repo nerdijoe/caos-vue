@@ -86,78 +86,42 @@
 
 
         <div class="row">
-      		<div class="col-sm-4 col-md-3 sidebar">
-            <div class="mini-submenu">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </div>
-            <div class="list-group">
-                <span href="#" class="list-group-item active">
-                    Categories
-                    <span class="pull-right" id="slide-submenu">
-                        <i class="fa fa-times"></i>
-                    </span>
-                </span>
-
-                <a href="#" class="list-group-item">
-                    <i class="fa fa-comment-o"></i> Best Graphic Tees
-                </a>
-                <a href="#" class="list-group-item">
-                    <i class="fa fa-search"></i> TV Shirts
-                </a>
-                <a href="#" class="list-group-item">
-                    <i class="fa fa-user"></i> Gaming Shirts
-                </a>
-                <a href="#" class="list-group-item">
-                    <i class="fa fa-folder-open-o"></i> Vintage Shirts <span class="badge">14</span>
-                </a>
-                <a href="#" class="list-group-item">
-                    <i class="fa fa-bar-chart-o"></i> Gaming Shirts <span class="badge">14</span>
-                </a>
-                <a href="#" class="list-group-item">
-                    <i class="fa fa-envelope"></i> Geek Shirts
-                </a>
-            </div>
-          </div>
-
-
-          <div class="col-sm-8 col-md-9 ">
-            <div class="jumbotron">
-              <h1>Hello, Caos Lovers!</h1>
-              <h3 v-if="is_login">{{message}}</h3>
-
-              <p><a class="btn btn-warning btn-lg" href="#" role="button">Learn more</a></p>
-            </div>
-
-
-            <div class="row">
-
-              <div class="col-md-4" v-for="item in items">
-                <div class="panel-heading item-image">
-                  <a href="#"><img v-bind:src="'./images/shirts/' + item.image" alt=""></a>
+          <div class="col-md-6">
+            <h2>Sign in</h2>
+            <form class="form-horizontal" v-on:submit="onSubmitForm" >
+              <div class="form-group">
+                <label for="inputEmail3" class="col-sm-2 control-label">Username</label>
+                <div class="col-sm-10">
+                  <input type="text" class="form-control" id="inputEmail3" v-model="user.username" placeholder="Username">
                 </div>
-                <div class="panel-body">
-                  <div class="row">
-                    <div class="col-md-12">
-                      {{item.name}}
-                    </div>
+              </div>
+              <div class="form-group">
+                <label for="inputPassword3" class="col-sm-2 control-label">Password</label>
+                <div class="col-sm-10">
+                  <input type="password" class="form-control" id="inputPassword3" v-model="user.password" placeholder="Password">
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                  <div class="checkbox">
+                    <label>
+                      <input type="checkbox"> Remember me
+                    </label>
                   </div>
-                  <div class="row">
-                    <div class="col-md-7"> ${{item.price}} </div>
-                    <div class="col-md-2"> <a class="btn btn-success" v-on:click="cart_counter++"  role="button">Tuku</a></div>
-                  </div>
-                </div> <!-- end of panel-body -->
-              </div> <!-- end of panel -->
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                  <button type="submit" class="btn btn-default">Sign in</button>
+                </div>
+              </div>
+            </form>
 
 
 
-
-            </div> <!-- end of row -->
-
-          </div> <!-- end of col-md-9 -->
-
+          </div>
       	</div> <!-- end of row -->
+
 
 
         <div class="push"></div>
@@ -165,6 +129,8 @@
         <div class="footer">
           <p>Copyright (c) 2017</p>
         </div>
+
+
 
       </div> <!-- end of container -->
 
@@ -180,21 +146,46 @@
     var app = new Vue({
       el: '#app',
       data: {
-        message: "Sup dude!",
+        message: "Sup",
         items: [],
         cart_counter: 0,
+        user: {name: "", username: "", email: "", password: ""},
         is_login: false
       },
       methods: {
         addCartCounter: () => {
           this.cart_counter+=1;
         },
-        signOut: () => {
-          // alert('signout')
-          localStorage.removeItem('token');
-          this.is_login= false;
+        onSubmitForm: (e) => {
+          e.preventDefault();
+          // alert(app.user.username)
 
-          window.location.href = "index.html"
+          axios.post('http://localhost:3000/users/signin', {
+            username: app.user.username,
+            password: app.user.password
+          })
+          .then(function (response) {
+            // get the token, save in local storage
+            console.log(response);
+            localStorage.setItem('token', response.data);
+            console.log(localStorage.token);
+
+            window.location.href = "index.html"
+
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+
+          // this.$http.post('/api/users',this.user,function(data){
+          //    router.go('/');
+          // })
+          // .error(function(data){
+          //   if(data.errors != 'undefined')
+          //   {
+          //     this.$set('error',data.errors);
+          //   }
+          // });
 
         }
       },
@@ -206,11 +197,8 @@
           // app.items.push(response.data[0])
           // need to call app.items instead of this.items
           app.items = response.data;
-          console.log(app.items);
-          console.log(localStorage.token);
+          console.log(this.items);
 
-          if(localStorage.token != null)
-            app.is_login = true;
         })
         .catch (err => {
           console.log(err);
